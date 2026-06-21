@@ -92,11 +92,29 @@ const UI = (() => {
   // =====================================================
 
   /** 登录 / 注册页面 */
-  function renderLogin() {
+  function renderLogin(existingUsers) {
+    const users = existingUsers || [];
+
+    // 已有账号列表（快速切换）
+    let userListSection = null;
+    if (users.length > 0) {
+      const userItems = users.map(u => el('button', {
+        className: 'category-pill',
+        textContent: '👤 ' + u,
+        'data-action': 'selectUser',
+        'data-username': u
+      }));
+      userListSection = el('div', { className: 'mb-12' }, [
+        el('div', { className: 'form-hint mb-8', textContent: '已有账号，点击切换（仍需输入密码）' }),
+        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, userItems)
+      ]);
+    }
+
     const container = el('div', { className: 'login-container' }, [
       el('div', { className: 'login-logo', textContent: '👗' }),
       el('h1', { className: 'login-title', textContent: '智能衣橱' }),
       el('p', { className: 'login-desc', textContent: '管理你的每一件衣服' }),
+      userListSection,
       el('div', { className: 'login-tabs' }, [
         el('button', { className: 'login-tab active', textContent: '登录', 'data-action': 'loginTab', 'data-tab': 'login' }),
         el('button', { className: 'login-tab', textContent: '注册', 'data-action': 'loginTab', 'data-tab': 'register' })

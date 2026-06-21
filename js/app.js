@@ -60,18 +60,33 @@ const App = (() => {
       const curUser = Crypto.getCurrentUser();
       if (!curUser) { location.hash = '#/login'; return; }
       if (!Crypto.hasKey()) {
-        // 刷新后密钥丢失，提示重新登录
-        Crypto.clearKey();
-        localStorage.removeItem('wardrobe_session');
-        location.hash = '#/login';
+        // 刷新后密钥丢失，尝试自动登录
+        const auto = await Crypto.autoLogin();
+        if (!auto.ok) {
+          Crypto.clearKey();
+          localStorage.removeItem('wardrobe_session');
+          location.hash = '#/login';
+          return;
+        }
+      }
+    }
+
+    // 登录页：如果已登录则自动跳到首页
+    if (page === 'login') {
+      const curUser = Crypto.getCurrentUser();
+      if (curUser && Crypto.hasKey()) {
+        location.hash = '#/';
         return;
       }
+      // 尝试自动登录
+      const auto = await Crypto.autoLogin();
+      if (auto.ok) { location.hash = '#/'; return; }
     }
 
     let content;
     switch (page) {
       case 'login':
-        content = UI.renderLogin();
+        content = UI.renderLogin(Crypto.getUsers());
         break;
       case 'home':
         content = await showDashboard();
@@ -200,7 +215,7 @@ const App = (() => {
 
     // 只对需要拦截的动作阻止默认行为
     // "pass-through" 类动作（如 quickAction）让浏览器正常处理链接跳转
-    const passthroughActions = ['quickAction', 'editItem'];
+    const passthroughActions = ['quickAction', 'editItem', 'selectUser'];
     const modalActions = ['confirmDeleteItem', 'confirmDeleteOutfit', 'confirmDeleteCategory',
       'confirmDeleteUser', 'closeModal'];
 
@@ -227,7 +242,10 @@ const App = (() => {
       case 'logout':
         Crypto.logout();
         location.hash = '#/login';
-        location.reload();
+        break;
+
+      case 'selectUser':
+        handleSelectUser(target.getAttribute('data-username'));
         break;
 
       // ── 拍照/选图 ──
@@ -316,6 +334,21 @@ const App = (() => {
   // =====================================================
 
   // ── 登录 ──────────────────────────────
+
+  function handleSelectUser(username) {
+    const userInput = document.getElementById('login-username');
+    const passInput = document.getElementById('login-password');
+    const tabs = document.querySelectorAll('.login-tab');
+    // 切到登录模式
+    tabs.forEach(t => t.classList.remove('active'));
+    const loginTab = document.querySelector('[data-tab="login"]');
+    if (loginTab) loginTab.classList.add('active');
+    loginMode = 'login';
+    const submitBtn = document.getElementById('login-submit');
+    if (submitBtn) submitBtn.textContent = '登录';
+    if (userInput) userInput.value = username;
+    if (passInput) { passInput.value = ''; passInput.focus(); }
+  }
 
   async function handleLoginSubmit() {
     const username = document.getElementById('login-username')?.value.trim();
