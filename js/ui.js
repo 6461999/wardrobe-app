@@ -137,97 +137,80 @@ const UI = (() => {
 
   // ── 首页仪表盘 ────────────────────────
 
-  const CAT_ICONS = {
-    '上衣': '👕', '裤子': '👖', '裙子': '👗', '外套': '🧥',
-    '鞋子': '👟', '配饰': '💍', '包包': '👜', '帽子': '🧢',
-    '其他': '📦'
-  };
-
   function renderDashboard(stats) {
     var s = stats || { totalItems: 0, totalOutfits: 0, totalWears: 0, mostWorn: [], recentItems: [], categoryCount: {} };
     var curUser = Crypto.getCurrentUser() || '';
     var settings = s.settings || {};
     var cats = settings.categories || ['上衣', '裤子', '裙子', '外套', '鞋子', '配饰', '包包', '其他'];
 
-    // 问候语
-    var greeting = el('div', { className: 'dashboard-greeting', textContent: '你好 👋' });
-    var userName = el('div', { className: 'dashboard-username', textContent: curUser + ' 的衣橱' });
-
-    // 设置按钮
-    var topRow = el('div', { className: 'flex-between mb-12' }, [
-      el('div', {}, [greeting, userName]),
-      el('a', { href: '#/settings', className: 'btn btn-ghost btn-icon', textContent: '⚙️' })
-    ]);
-
     // 空状态
     if (s.totalItems === 0) {
-      var emptyArea = el('div', { className: 'empty-state mt-20' }, [
+      var emptyFrag = document.createDocumentFragment();
+      emptyFrag.appendChild(dashHeader('我的衣橱'));
+      emptyFrag.appendChild(el('div', { className: 'empty-state mt-20' }, [
         el('div', { className: 'empty-state-icon', textContent: '👗' }),
         el('div', { className: 'empty-state-text', textContent: '衣橱还是空的' }),
-        el('div', { className: 'empty-state-hint', textContent: '拍照录入第一件衣服吧' }),
-        el('a', { href: '#/add', className: 'big-add-btn mt-16', textContent: '📸 添加第一件衣服' })
-      ]);
-      var frag0 = document.createDocumentFragment();
-      frag0.appendChild(topRow);
-      frag0.appendChild(emptyArea);
-      return frag0;
+        el('div', { className: 'empty-state-hint', textContent: '点右下角 + 添加第一件衣服' })
+      ]));
+      emptyFrag.appendChild(fabBtn());
+      return emptyFrag;
     }
 
-    // 统计行
-    var statRow = el('div', { className: 'stat-row' }, [
-      dashStat(s.totalItems, '衣服'),
-      dashStat(s.totalOutfits, '搭配'),
-      dashStat(s.totalWears, '穿着'),
-      dashStat(Object.keys(s.categoryCount || {}).length, '分类')
-    ]);
-
-    // 分类快捷入口
+    // 分类列表卡片
     var catCards = cats.map(function(c) {
       var cnt = (s.categoryCount || {})[c] || 0;
-      var icon = CAT_ICONS[c] || '📦';
-      return el('a', { href: '#/wardrobe/' + encodeURIComponent(c), className: 'category-card' }, [
-        el('span', { className: 'cat-icon', textContent: icon }),
-        el('div', { className: 'cat-name', textContent: c }),
-        el('div', { className: 'cat-count', textContent: String(cnt) })
-      ]);
+      var firstItem = null;
+      if (s.recentItems) {
+        firstItem = s.recentItems.find(function(i) { return i.category === c; });
+      }
+      return catListCard(c, cnt, firstItem);
     });
-    var catSection = el('div', {}, [
-      el('div', { className: 'dashboard-section-title', textContent: '分类浏览' }),
-      el('div', { className: 'category-cards' }, catCards)
-    ]);
-
-    // 最近添加（横滑缩略图）
-    var recentSection = null;
-    if (s.recentItems && s.recentItems.length > 0) {
-      var thumbs = s.recentItems.map(function(i) {
-        return el('a', { href: '#/detail/' + i.id, className: 'recent-thumb' }, [
-          el('img', { className: 'recent-thumb-img', src: i.thumbnail || './assets/placeholder.png', alt: i.name, loading: 'lazy' }),
-          el('div', { className: 'recent-thumb-name', textContent: i.name })
-        ]);
-      });
-      recentSection = el('div', {}, [
-        el('div', { className: 'dashboard-section-title', textContent: '最近添加' }),
-        el('div', { className: 'recent-scroll' }, thumbs)
-      ]);
-    }
-
-    // 添加按钮
-    var addBtn = el('a', { href: '#/add', className: 'big-add-btn', textContent: '📸 添加衣服' });
 
     var frag = document.createDocumentFragment();
-    frag.appendChild(topRow);
-    frag.appendChild(statRow);
-    frag.appendChild(catSection);
-    if (recentSection) frag.appendChild(recentSection);
-    frag.appendChild(addBtn);
+    frag.appendChild(dashHeader('我的衣橱'));
+    frag.appendChild(el('div', { className: 'cat-list' }, catCards));
+    frag.appendChild(fabBtn());
     return frag;
   }
 
-  function dashStat(num, label) {
-    return el('div', { className: 'stat-item-dash' }, [
-      el('div', { className: 'stat-num', textContent: String(num) }),
-      el('div', { className: 'stat-label', textContent: label })
+  /** 首页标题栏: "我的衣橱 ▼" | 🔍 ⊞ ⋮ */
+  function dashHeader(title) {
+    return el('div', { className: 'dash-header' }, [
+      el('div', { className: 'dash-title-row' }, [
+        el('span', { className: 'dash-title', textContent: title }),
+        el('span', { className: 'dash-title-arrow', textContent: '▼' })
+      ]),
+      el('div', { className: 'dash-header-icons' }, [
+        el('button', { className: 'dash-header-icon', textContent: '🔍', 'data-action': 'searchItems' }),
+        el('button', { className: 'dash-header-icon', textContent: '⊞', 'data-action': 'gridView' }),
+        el('button', { className: 'dash-header-icon', textContent: '⋯', 'data-action': 'moreOptions' })
+      ])
     ]);
+  }
+
+  /** 单张分类列表卡片 */
+  function catListCard(catName, count, firstItem) {
+    var imgArea;
+    if (firstItem && firstItem.thumbnail) {
+      imgArea = el('img', { className: 'cat-list-thumb', src: firstItem.thumbnail, alt: catName });
+    } else {
+      imgArea = el('div', { className: 'cat-list-left' }, [
+        el('span', { className: 'cat-placeholder', textContent: '+' })
+      ]);
+    }
+    return el('a', { href: '#/wardrobe/' + encodeURIComponent(catName), className: 'cat-list-card' }, [
+      imgArea,
+      el('div', { className: 'cat-list-info' }, [
+        el('div', { className: 'cat-list-name', textContent: catName }),
+        el('div', { className: 'cat-list-count', textContent: '· ' + count + ' 个' })
+      ]),
+      el('button', { className: 'cat-list-more', textContent: '☰', 'data-action': 'catMore', 'data-category': catName })
+    ]);
+  }
+
+  /** FAB 悬浮按钮 */
+  function fabBtn() {
+    return el('a', { href: '#/add', className: 'fab', textContent: '+' });
   }
 
   function miniItemCard(item) {
@@ -252,6 +235,19 @@ const UI = (() => {
         ])
       ])
     ]);
+  }
+
+  // ── 灵感页（占位） ────────────────────
+
+  function renderInspire() {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(dashHeader('灵感'));
+    frag.appendChild(el('div', { className: 'empty-state mt-20' }, [
+      el('div', { className: 'empty-state-icon', textContent: '✨' }),
+      el('div', { className: 'empty-state-text', textContent: '穿搭灵感' }),
+      el('div', { className: 'empty-state-hint', textContent: '此功能即将上线，敬请期待' })
+    ]));
+    return frag;
   }
 
   // ── 添加衣服页 ────────────────────────
@@ -767,6 +763,7 @@ const UI = (() => {
     renderOutfitList,
     renderOutfitDetail,
     renderOutfitBuilder,
+    renderInspire,
     renderSettings,
     updateOutfitPreview
   };

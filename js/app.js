@@ -47,7 +47,7 @@ const App = (() => {
     }
 
     // 简单路由
-    const simplePages = ['add', 'outfits', 'settings'];
+    const simplePages = ['add', 'outfits', 'settings', 'inspire'];
     if (simplePages.includes(page)) return { page, params: {} };
 
     // 默认首页
@@ -119,6 +119,9 @@ const App = (() => {
         break;
       case 'settings':
         content = await showSettings();
+        break;
+      case 'inspire':
+        content = UI.renderInspire();
         break;
       default:
         content = await showDashboard();
@@ -193,10 +196,11 @@ const App = (() => {
 
   function updateNavHighlight(page) {
     const navMap = {
-      home: 'home', add: 'add', wardrobe: 'wardrobe',
-      detail: 'wardrobe', editItem: 'wardrobe',
+      home: 'home', add: 'home', wardrobe: 'home',
+      detail: 'home', editItem: 'home',
       outfits: 'outfits', outfitNew: 'outfits', outfitDetail: 'outfits',
-      settings: null
+      inspire: 'inspire',
+      settings: 'settings'
     };
     const active = navMap[page];
     document.querySelectorAll('.nav-item').forEach(el => {
@@ -221,7 +225,7 @@ const App = (() => {
 
     // 只对需要拦截的动作阻止默认行为
     // "pass-through" 类动作（如 quickAction）让浏览器正常处理链接跳转
-    const passthroughActions = ['quickAction', 'editItem', 'selectUser'];
+    const passthroughActions = ['quickAction', 'editItem', 'selectUser', 'searchItems', 'gridView', 'moreOptions', 'catMore'];
     const modalActions = ['confirmDeleteItem', 'confirmDeleteOutfit', 'confirmDeleteCategory',
       'confirmDeleteUser', 'closeModal'];
 
@@ -328,6 +332,21 @@ const App = (() => {
 
       case 'deleteUser':
         await handleDeleteUser(target.getAttribute('data-username'));
+        break;
+
+      // ── 首页头部按钮（简单提示）──
+      case 'searchItems':
+        UI.showToast('搜索功能即将上线');
+        break;
+      case 'gridView':
+        location.hash = '#/wardrobe';
+        break;
+      case 'moreOptions':
+        UI.showToast('更多操作即将上线');
+        break;
+      case 'catMore':
+        e.stopPropagation();
+        UI.showToast(target.getAttribute('data-category') + ' 操作菜单');
         break;
 
       default:

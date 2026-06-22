@@ -12,9 +12,9 @@
 
 /* ── CSS 变量（主题） ────────────────────── */
 :root {
-  --primary:       #4A90D9;
-  --primary-light: #E8F0FA;
-  --primary-dark:  #3A7BC8;
+  --primary:       #436AFD;
+  --primary-light: #EEF1FE;
+  --primary-dark:  #3456D9;
   --accent:        #FF6B6B;
   --accent-light:  #FFE8E8;
   --bg:            #FAFAFA;
@@ -937,154 +937,153 @@ input, select { font: inherit; outline: none; }
 .text-sm { font-size: 13px; }
 
 /* ── 新首页样式 ────────────────────────── */
-.dashboard-greeting {
-  font-size: 15px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
 
-.dashboard-username {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-
-.dashboard-section-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 14px;
-  margin-top: 8px;
-}
-
-/* 统计行：一行显示4个数字 */
-.stat-row {
+/* 标题区 */
+.dash-header {
   display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
-.stat-item-dash {
-  flex: 1;
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 14px 10px;
-  text-align: center;
-  box-shadow: var(--shadow);
+.dash-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.stat-item-dash .stat-num {
-  font-size: 26px;
+.dash-title {
+  font-size: 22px;
   font-weight: 700;
   color: var(--text);
+}
+
+.dash-title-arrow {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dash-header-icons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dash-header-icon {
+  font-size: 20px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
   line-height: 1;
 }
 
-.stat-item-dash .stat-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 6px;
+/* 分类列表卡片 */
+.cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* 分类快捷入口卡片 */
-.category-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.category-card {
+.cat-list-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   background: var(--card);
   border-radius: var(--radius);
-  padding: 16px 10px;
-  text-align: center;
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: transform 0.2s;
+  padding: 14px 16px;
   text-decoration: none;
   color: inherit;
-  display: block;
+  transition: transform 0.15s;
+  /* 扁平风格，微弱底边框 */
+  border-bottom: 1px solid var(--border);
 }
-.category-card:active { transform: scale(0.95); }
+.cat-list-card:active { transform: scale(0.98); }
 
-.category-card .cat-icon {
-  font-size: 28px;
-  display: block;
-  margin-bottom: 8px;
+.cat-list-left {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.category-card .cat-name {
-  font-size: 12px;
+.cat-list-left .cat-placeholder {
+  font-size: 22px;
+  color: #CCCCCC;
+}
+
+.cat-list-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: #F0F0F0;
+}
+.cat-list-thumb.hidden { display: none; }
+
+.cat-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cat-list-name {
+  font-size: 16px;
   font-weight: 600;
   color: var(--text);
 }
 
-.category-card .cat-count {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-top: 4px;
+.cat-list-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
-/* 最近的横滑区 */
-.recent-scroll {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-.recent-scroll::-webkit-scrollbar { display: none; }
-
-.recent-thumb {
+.cat-list-more {
   flex-shrink: 0;
-  width: 88px;
-  background: var(--card);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  transition: transform 0.2s;
-}
-.recent-thumb:active { transform: scale(0.95); }
-
-.recent-thumb-img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  background: #F0F0F0;
-}
-
-.recent-thumb-name {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 6px 8px;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 大添加按钮 */
-.big-add-btn {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 18px;
+  font-size: 18px;
+  color: var(--text-light);
+}
+
+/* FAB 悬浮添加按钮 */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(var(--nav-height) + var(--safe-bottom) + 24px);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   background: var(--primary);
   color: #fff;
-  border-radius: var(--radius);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(67,106,253,0.35);
+  z-index: 50;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgba(74,144,217,0.3);
-  transition: all 0.2s;
-  margin-top: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  line-height: 1;
 }
-.big-add-btn:active { transform: scale(0.97); background: var(--primary-dark); }
+.fab:active { transform: scale(0.9); box-shadow: 0 2px 8px rgba(67,106,253,0.25); }
+
+/* 通知红点 */
+.notif-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #FF3B30;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+}
