@@ -8,7 +8,7 @@
  *
  * 缓存版本号 —— 更新应用时改这个数字即可
  */
-const CACHE_NAME = 'wardrobe-v1';
+const CACHE_NAME = 'wardrobe-v2';
 
 // 预缓存的文件列表（app shell）
 const PRECACHE_URLS = [
