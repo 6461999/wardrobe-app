@@ -936,6 +936,14 @@ input, select { font: inherit; outline: none; }
 .text-secondary { color: var(--text-secondary); }
 .text-sm { font-size: 13px; }
 
+/* 小金毛 */
+.dash-puppy {
+  font-size: 26px;
+  margin-right: 2px;
+  filter: drop-shadow(0 2px 2px rgba(245,166,35,0.3));
+  transform: scaleX(-1);
+}
+
 /* ── 新首页样式 ────────────────────────── */
 
 /* 标题区 */

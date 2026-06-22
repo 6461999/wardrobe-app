@@ -177,6 +177,7 @@ const UI = (() => {
   function dashHeader(title) {
     return el('div', { className: 'dash-header' }, [
       el('div', { className: 'dash-title-row' }, [
+        el('span', { className: 'dash-puppy', textContent: '🐕' }),
         el('span', { className: 'dash-title', textContent: title }),
         el('span', { className: 'dash-title-arrow', textContent: '▼' })
       ]),
