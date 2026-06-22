@@ -938,6 +938,7 @@ input, select { font: inherit; outline: none; }
 
 /* 🐶 小金毛 */
 .dash-puppy {
+  display: inline-block;
   font-size: 28px;
   margin-right: 4px;
   color: #F5A623;
