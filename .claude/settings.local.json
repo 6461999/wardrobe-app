@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:6461999.github.io)"
+      "WebFetch(domain:6461999.github.io)",
+      "Bash(git config *)",
+      "Bash(ssh -T -o StrictHostKeyChecking=no -o ConnectTimeout=10 git@github.com)"
     ]
   }
 }

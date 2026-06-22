@@ -41,8 +41,13 @@ const App = (() => {
     // #/outfit/:id
     if (page === 'outfit' && parts.length >= 2) return { page: 'outfitDetail', params: { id: parts[1] } };
 
+    // #/wardrobe 或 #/wardrobe/:category
+    if (page === 'wardrobe') {
+      return { page: 'wardrobe', params: { category: parts[1] || '' } };
+    }
+
     // 简单路由
-    const simplePages = ['add', 'wardrobe', 'outfits', 'settings'];
+    const simplePages = ['add', 'outfits', 'settings'];
     if (simplePages.includes(page)) return { page, params: {} };
 
     // 默认首页
@@ -95,7 +100,7 @@ const App = (() => {
         content = await showAddForm();
         break;
       case 'wardrobe':
-        content = await showWardrobe();
+        content = await showWardrobe(params.category || '');
         break;
       case 'detail':
         content = await showDetail(params.id);
@@ -126,7 +131,8 @@ const App = (() => {
   // ── 各页面数据加载 ────────────────────
 
   async function showDashboard() {
-    const stats = await DB.getStats();
+    const [stats, settings] = await Promise.all([DB.getStats(), DB.getSettings()]);
+    stats.settings = settings;
     return UI.renderDashboard(stats);
   }
 
@@ -137,11 +143,11 @@ const App = (() => {
     return UI.renderAddForm(settings);
   }
 
-  async function showWardrobe() {
-    const items = await DB.getItems();
-    const settings = await DB.getSettings();
-    // 从 URL query 读取分类筛选（可选扩展，暂时默认全部）
-    return UI.renderWardrobe(items, '', settings);
+  async function showWardrobe(filterCat) {
+    const [items, settings] = await Promise.all([DB.getItems(), DB.getSettings()]);
+    var cat = filterCat || '';
+    var filtered = cat ? items.filter(function(i) { return i.category === cat; }) : items;
+    return UI.renderWardrobe(filtered, cat, settings);
   }
 
   async function showDetail(id) {

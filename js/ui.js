@@ -137,83 +137,96 @@ const UI = (() => {
 
   // ── 首页仪表盘 ────────────────────────
 
+  const CAT_ICONS = {
+    '上衣': '👕', '裤子': '👖', '裙子': '👗', '外套': '🧥',
+    '鞋子': '👟', '配饰': '💍', '包包': '👜', '帽子': '🧢',
+    '其他': '📦'
+  };
+
   function renderDashboard(stats) {
-    const s = stats || { totalItems: 0, totalOutfits: 0, totalWears: 0, mostWorn: [], recentItems: [] };
+    var s = stats || { totalItems: 0, totalOutfits: 0, totalWears: 0, mostWorn: [], recentItems: [], categoryCount: {} };
+    var curUser = Crypto.getCurrentUser() || '';
+    var settings = s.settings || {};
+    var cats = settings.categories || ['上衣', '裤子', '裙子', '外套', '鞋子', '配饰', '包包', '其他'];
 
-    const header = pageHeader('衣橱', null,
-      el('a', { href: '#/settings', className: 'btn btn-ghost btn-sm', textContent: '⚙️ 设置' })
-    );
+    // 问候语
+    var greeting = el('div', { className: 'dashboard-greeting', textContent: '你好 👋' });
+    var userName = el('div', { className: 'dashboard-username', textContent: curUser + ' 的衣橱' });
 
-    const statCards = el('div', { className: 'stats-grid' }, [
-      statBox('衣服', s.totalItems, '件'),
-      statBox('搭配', s.totalOutfits, '套'),
-      statBox('穿着', s.totalWears, '次'),
-      statBox('分类', Object.keys(s.categoryCount || {}).length, '个')
+    // 设置按钮
+    var topRow = el('div', { className: 'flex-between mb-12' }, [
+      el('div', {}, [greeting, userName]),
+      el('a', { href: '#/settings', className: 'btn btn-ghost btn-icon', textContent: '⚙️' })
     ]);
-
-    const quick = el('div', { className: 'quick-actions' }, [
-      quickBtn('add', '➕', '添加衣服', '拍照录入新衣服', '#/add'),
-      quickBtn('view', '👗', '浏览衣橱', '查看所有衣服', '#/wardrobe'),
-      quickBtn('outfit', '🧩', '搭配组合', '创建新搭配', '#/outfit/new'),
-      quickBtn('settings', '⚙️', '我的设置', '分类与账户管理', '#/settings')
-    ]);
-
-    // 最常穿
-    let mostWornSection = null;
-    if (s.mostWorn && s.mostWorn.length > 0) {
-      const items = s.mostWorn.map(i => miniItemCard(i));
-      mostWornSection = el('div', {}, [
-        el('h3', { className: 'settings-section-title', textContent: '👑 最常穿' }),
-        el('div', { className: 'item-grid' }, items)
-      ]);
-    }
-
-    // 最近添加
-    let recentSection = null;
-    if (s.recentItems && s.recentItems.length > 0) {
-      const items = s.recentItems.map(i => miniItemCard(i));
-      recentSection = el('div', { className: 'mt-20' }, [
-        el('h3', { className: 'settings-section-title', textContent: '🆕 最近添加' }),
-        el('div', { className: 'item-grid' }, items)
-      ]);
-    }
 
     // 空状态
-    let empty = null;
     if (s.totalItems === 0) {
-      empty = el('div', { className: 'empty-state' }, [
+      var emptyArea = el('div', { className: 'empty-state mt-20' }, [
         el('div', { className: 'empty-state-icon', textContent: '👗' }),
         el('div', { className: 'empty-state-text', textContent: '衣橱还是空的' }),
-        el('div', { className: 'empty-state-hint mt-8', textContent: '点击"添加"录入第一件衣服吧' }),
-        el('a', { href: '#/add', className: 'btn btn-primary mt-16', textContent: '添加第一件衣服' })
+        el('div', { className: 'empty-state-hint', textContent: '拍照录入第一件衣服吧' }),
+        el('a', { href: '#/add', className: 'big-add-btn mt-16', textContent: '📸 添加第一件衣服' })
+      ]);
+      var frag0 = document.createDocumentFragment();
+      frag0.appendChild(topRow);
+      frag0.appendChild(emptyArea);
+      return frag0;
+    }
+
+    // 统计行
+    var statRow = el('div', { className: 'stat-row' }, [
+      dashStat(s.totalItems, '衣服'),
+      dashStat(s.totalOutfits, '搭配'),
+      dashStat(s.totalWears, '穿着'),
+      dashStat(Object.keys(s.categoryCount || {}).length, '分类')
+    ]);
+
+    // 分类快捷入口
+    var catCards = cats.map(function(c) {
+      var cnt = (s.categoryCount || {})[c] || 0;
+      var icon = CAT_ICONS[c] || '📦';
+      return el('a', { href: '#/wardrobe/' + encodeURIComponent(c), className: 'category-card' }, [
+        el('span', { className: 'cat-icon', textContent: icon }),
+        el('div', { className: 'cat-name', textContent: c }),
+        el('div', { className: 'cat-count', textContent: String(cnt) })
+      ]);
+    });
+    var catSection = el('div', {}, [
+      el('div', { className: 'dashboard-section-title', textContent: '分类浏览' }),
+      el('div', { className: 'category-cards' }, catCards)
+    ]);
+
+    // 最近添加（横滑缩略图）
+    var recentSection = null;
+    if (s.recentItems && s.recentItems.length > 0) {
+      var thumbs = s.recentItems.map(function(i) {
+        return el('a', { href: '#/detail/' + i.id, className: 'recent-thumb' }, [
+          el('img', { className: 'recent-thumb-img', src: i.thumbnail || './assets/placeholder.png', alt: i.name, loading: 'lazy' }),
+          el('div', { className: 'recent-thumb-name', textContent: i.name })
+        ]);
+      });
+      recentSection = el('div', {}, [
+        el('div', { className: 'dashboard-section-title', textContent: '最近添加' }),
+        el('div', { className: 'recent-scroll' }, thumbs)
       ]);
     }
 
-    const frag = document.createDocumentFragment();
-    frag.appendChild(header);
-    frag.appendChild(statCards);
-    frag.appendChild(quick);
-    if (mostWornSection) frag.appendChild(mostWornSection);
-    if (recentSection) frag.appendChild(recentSection);
-    if (empty) frag.appendChild(empty);
+    // 添加按钮
+    var addBtn = el('a', { href: '#/add', className: 'big-add-btn', textContent: '📸 添加衣服' });
 
+    var frag = document.createDocumentFragment();
+    frag.appendChild(topRow);
+    frag.appendChild(statRow);
+    frag.appendChild(catSection);
+    if (recentSection) frag.appendChild(recentSection);
+    frag.appendChild(addBtn);
     return frag;
   }
 
-  function statBox(label, value, unit) {
-    return el('div', { className: 'stat-card' }, [
-      el('div', { className: 'stat-value', textContent: String(value) }),
-      el('div', { className: 'stat-label', textContent: `${label} · ${unit}` })
-    ]);
-  }
-
-  function quickBtn(key, icon, label, hint, href) {
-    return el('a', { href, className: 'quick-action', 'data-action': 'quickAction', 'data-key': key }, [
-      el('div', { className: 'quick-action-icon ' + key, textContent: icon }),
-      el('div', {}, [
-        el('div', { className: 'quick-action-label', textContent: label }),
-        el('div', { className: 'quick-action-hint', textContent: hint })
-      ])
+  function dashStat(num, label) {
+    return el('div', { className: 'stat-item-dash' }, [
+      el('div', { className: 'stat-num', textContent: String(num) }),
+      el('div', { className: 'stat-label', textContent: label })
     ]);
   }
 
