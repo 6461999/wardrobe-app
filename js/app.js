@@ -401,50 +401,30 @@ const App = (() => {
     location.hash = '#/';
   }
 
-  // ── 拍照/选图 + 自动保存 ──────────
+  // ── 拍照/选图 ─────────────────────────
 
   async function handlePickImage() {
-    var processing = document.getElementById('processing');
     try {
-      var blob = await Camera.pickImage();
+      const blob = await Camera.pickImage();
       if (!blob) return;
 
-      // 显示处理中
-      if (processing) processing.style.display = '';
+      currentImageBlob = blob;
+      currentThumbnail = await DB.blobToThumbnail(blob, 200);
 
-      // 压缩
-      var compressed = await Camera.compressBlob(blob, 800, 0.7);
+      // 显示预览
+      const previewArea = document.getElementById('preview-area');
+      const previewImg  = document.getElementById('preview-img');
+      const uploadArea  = document.getElementById('upload-area');
 
-      // 生成缩略图
-      var thumb = await DB.blobToThumbnail(compressed, 200);
-
-      // 存图片到 IndexedDB
-      var blobId = await DB.saveImage(compressed);
-
-      // 自动生成名称
-      var items = await DB.getItems();
-      var settings = await DB.getSettings();
-      var defaultCat = (settings.categories || ['上衣'])[0];
-      var sameCat = items.filter(function(i) { return i.category === defaultCat; });
-      var autoName = defaultCat + ' ' + (sameCat.length + 1);
-
-      // 自动保存
-      await DB.addItem({
-        name: autoName,
-        category: defaultCat,
-        purchaseDate: DB.today(),
-        imageBlobId: blobId,
-        thumbnail: thumb
-      });
-
-      if (processing) processing.style.display = 'none';
-      UI.showToast('✅ ' + autoName + ' 已保存！', 'success');
-
-      // 跳回衣橱
-      setTimeout(function() { location.hash = '#/'; }, 600);
+      if (previewArea) previewArea.style.display = '';
+      if (uploadArea) uploadArea.style.display = 'none';
+      if (previewImg) {
+        const oldUrl = previewImg.src;
+        previewImg.src = URL.createObjectURL(blob);
+        if (oldUrl && oldUrl.startsWith('blob:')) URL.revokeObjectURL(oldUrl);
+      }
     } catch (e) {
-      if (processing) processing.style.display = 'none';
-      UI.showToast('保存失败: ' + e.message, 'error');
+      UI.showToast('图片选择失败: ' + e.message, 'error');
     }
   }
 

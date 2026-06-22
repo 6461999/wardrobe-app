@@ -251,43 +251,66 @@ const UI = (() => {
     return frag;
   }
 
-  // ── 添加衣服页（简洁版）─────────────────
+  // ── 添加衣服页 ────────────────────────
 
   function renderAddForm(settings) {
-    var cats = settings.categories || ['上衣', '裤子', '裙子', '外套', '鞋子', '配饰', '包包', '其他'];
+    const cats = settings.categories || ['上衣', '裤子', '裙子', '外套', '鞋子', '配饰', '包包', '其他'];
+    const hasApiKey = !!(settings.removeBgApiKey && settings.removeBgApiKey.trim());
 
-    var header = pageHeader('添加衣服', '#/');
+    const header = pageHeader('添加衣服', '#/');
 
-    // 两张大按钮
-    var actions = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '40px' } }, [
-      el('button', {
-        className: 'add-big-btn',
-        textContent: '',
-        'data-action': 'pickImage',
-        innerHTML: '<span class="add-big-icon">📸</span><span class="add-big-text">拍照</span><span class="add-big-hint">用相机拍摄衣服照片</span>'
-      }),
-      el('button', {
-        className: 'add-big-btn add-big-btn-alt',
-        textContent: '',
-        'data-action': 'pickImage',
-        innerHTML: '<span class="add-big-icon">🖼️</span><span class="add-big-text">从相册选择</span><span class="add-big-hint">从手机相册选取图片</span>'
-      })
+    // 图片上传区域
+    const uploadArea = el('div', { id: 'upload-area', className: 'upload-area', 'data-action': 'pickImage' }, [
+      el('div', { className: 'upload-area-icon', textContent: '📸' }),
+      el('div', { className: 'upload-area-text', textContent: '点击拍照或选择图片' }),
+      el('div', { className: 'upload-area-hint', textContent: '支持手机拍照和相册选取' })
     ]);
 
-    // 处理中
-    var processing = el('div', { id: 'processing', className: 'processing', style: { display: 'none' } }, [
+    // 图片预览区域（默认隐藏）
+    const previewArea = el('div', { id: 'preview-area', style: { display: 'none' } }, [
+      el('img', { id: 'preview-img', className: 'upload-preview', src: '' }),
+      el('div', { className: 'upload-actions' }, [
+        el('button', { className: 'btn btn-outline btn-sm', textContent: '📷 重拍', 'data-action': 'pickImage' }),
+        hasApiKey
+          ? el('button', { id: 'btn-remove-bg', className: 'btn btn-outline btn-sm', textContent: '✨ AI 抠图', 'data-action': 'removeBg' })
+          : null,
+        el('button', { id: 'btn-process', className: 'btn btn-outline btn-sm', textContent: '🔄 压缩', 'data-action': 'compress' })
+      ].filter(Boolean))
+    ]);
+
+    // 处理中状态
+    const processing = el('div', { id: 'processing', className: 'processing', style: { display: 'none' } }, [
       el('div', { className: 'spinner' }),
-      el('span', { textContent: '正在保存...' })
+      el('span', { textContent: 'AI 正在抠图，请稍候...' })
     ]);
 
-    var frag = document.createDocumentFragment();
+    // 表单
+    const form = el('div', { className: 'mt-12' }, [
+      el('div', { className: 'form-group' }, [
+        el('label', { className: 'form-label', textContent: '衣服名称 *' }),
+        el('input', { id: 'item-name', className: 'form-input', type: 'text', placeholder: '例如：白色纯棉T恤' })
+      ]),
+      el('div', { className: 'form-group' }, [
+        el('label', { className: 'form-label', textContent: '分类' }),
+        el('select', { id: 'item-category', className: 'form-select' },
+          cats.map(c => el('option', { value: c, textContent: c }))
+        )
+      ]),
+      el('div', { className: 'form-group' }, [
+        el('label', { className: 'form-label', textContent: '购买日期' }),
+        el('input', { id: 'item-date', className: 'form-input', type: 'date', value: DB.today() })
+      ]),
+      el('button', { id: 'btn-save', className: 'btn btn-primary btn-block mt-12', textContent: '💾 保存衣服', 'data-action': 'saveItem' })
+    ]);
+
+    const frag = document.createDocumentFragment();
     frag.appendChild(header);
-    frag.appendChild(actions);
+    frag.appendChild(uploadArea);
+    frag.appendChild(previewArea);
     frag.appendChild(processing);
+    frag.appendChild(form);
     return frag;
   }
-
-  // ── 添加衣服页 ────────────────────────
 
   // ── 衣橱浏览页 ────────────────────────
 
