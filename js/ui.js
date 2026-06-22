@@ -229,10 +229,7 @@ const UI = (() => {
       el('div', { className: 'item-card-body' }, [
         el('div', { className: 'item-card-name', textContent: item.name }),
         el('div', { className: 'item-card-meta' }, [
-          el('span', { textContent: item.category }),
-          item.wearCount > 0
-            ? el('span', { className: 'wear-badge', textContent: '穿过 ' + item.wearCount + ' 次' })
-            : el('span', { textContent: '未穿过' })
+          el('span', { textContent: item.category })
         ])
       ])
     ]);
@@ -295,10 +292,6 @@ const UI = (() => {
         el('select', { id: 'item-category', className: 'form-select' },
           cats.map(c => el('option', { value: c, textContent: c }))
         )
-      ]),
-      el('div', { className: 'form-group' }, [
-        el('label', { className: 'form-label', textContent: '购买日期' }),
-        el('input', { id: 'item-date', className: 'form-input', type: 'date', value: DB.today() })
       ]),
       el('button', { id: 'btn-save', className: 'btn btn-primary btn-block mt-12', textContent: '💾 保存衣服', 'data-action': 'saveItem' })
     ]);
@@ -388,13 +381,10 @@ const UI = (() => {
 
     const info = el('div', { className: 'detail-info' }, [
       detailRow('分类', item.category),
-      detailRow('购买日期', item.purchaseDate || '未设置'),
-      detailRow('穿着次数', el('span', { className: 'wear-badge', textContent: String(item.wearCount || 0) + ' 次' })),
       detailRow('录入时间', new Date(item.createdAt).toLocaleDateString('zh-CN'))
     ]);
 
     const actions = el('div', { className: 'detail-actions' }, [
-      el('button', { className: 'btn btn-primary', textContent: '👆 今天穿了', 'data-action': 'woreToday', 'data-id': item.id }),
       el('a', { href: '#/wardrobe', className: 'btn btn-outline', textContent: '返回衣橱' })
     ]);
 
@@ -438,10 +428,6 @@ const UI = (() => {
         el('select', { id: 'edit-category', className: 'form-select' },
           cats.map(c => el('option', { value: c, textContent: c, ...(c === item.category ? { selected: true } : {}) }))
         )
-      ]),
-      el('div', { className: 'form-group' }, [
-        el('label', { className: 'form-label', textContent: '购买日期' }),
-        el('input', { id: 'edit-date', className: 'form-input', type: 'date', value: item.purchaseDate || '' })
       ]),
       el('button', { className: 'btn btn-primary btn-block mt-12', textContent: '💾 保存修改', 'data-action': 'saveEdit', 'data-id': item.id })
     ]);

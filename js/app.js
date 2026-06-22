@@ -281,11 +281,6 @@ const App = (() => {
         await handleFilterCategory(target.getAttribute('data-category'));
         break;
 
-      // ── 穿着 ──
-      case 'woreToday':
-        await handleWoreToday(target.getAttribute('data-id'));
-        break;
-
       // ── 编辑 ──
       case 'editItem':
         location.hash = '#/detail/' + target.closest('[data-id]')?.getAttribute('data-id') + '/edit';
@@ -488,20 +483,16 @@ const App = (() => {
   async function handleSaveItem() {
     const name = document.getElementById('item-name')?.value.trim();
     const category = document.getElementById('item-category')?.value;
-    const purchaseDate = document.getElementById('item-date')?.value;
 
     if (!name) { UI.showToast('请输入衣服名称', 'error'); return; }
     if (!currentImageBlob) { UI.showToast('请先拍照或选择图片', 'error'); return; }
 
     try {
-      // 保存图片到 IndexedDB
       const blobId = await DB.saveImage(currentImageBlob);
 
-      // 保存元数据
       await DB.addItem({
         name,
         category,
-        purchaseDate: purchaseDate || DB.today(),
         imageBlobId: blobId,
         thumbnail: currentThumbnail
       });
@@ -530,32 +521,16 @@ const App = (() => {
 
   // ── 穿着记录 ──────────────────────────
 
-  async function handleWoreToday(id) {
-    try {
-      const newCount = await DB.incrementWear(id);
-      UI.showToast('已记录！👆 累计穿着 ' + newCount + ' 次', 'success');
-      // 重新渲染详情页
-      const item = await DB.getItem(id);
-      if (item) {
-        const app = document.getElementById('app');
-        if (app) UI.render(app, UI.renderDetail(item));
-      }
-    } catch (e) {
-      UI.showToast('操作失败: ' + e.message, 'error');
-    }
-  }
-
   // ── 编辑衣服 ──────────────────────────
 
   async function handleSaveEdit(id) {
     const name = document.getElementById('edit-name')?.value.trim();
     const category = document.getElementById('edit-category')?.value;
-    const purchaseDate = document.getElementById('edit-date')?.value;
 
     if (!name) { UI.showToast('名称不能为空', 'error'); return; }
 
     try {
-      await DB.updateItem(id, { name, category, purchaseDate });
+      await DB.updateItem(id, { name, category });
       UI.showToast('修改已保存', 'success');
       location.hash = '#/detail/' + id;
     } catch (e) {

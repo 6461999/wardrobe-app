@@ -147,8 +147,6 @@ const DB = (() => {
       category: itemData.category || '其他',
       imageBlobId: itemData.imageBlobId || null,
       thumbnail: itemData.thumbnail || '',
-      purchaseDate: itemData.purchaseDate || today(),
-      wearCount: 0,
       createdAt: now()
     };
     data.items.push(item);
@@ -183,16 +181,6 @@ const DB = (() => {
       itemIds: o.itemIds.filter(iid => iid !== id)
     })).filter(o => o.itemIds.length >= 2); // 少于2件的搭配自动删除
     await writeMeta(data);
-  }
-
-  /** 穿着次数 +1 */
-  async function incrementWear(id) {
-    const data = await readMeta();
-    const item = data.items.find(i => i.id === id);
-    if (!item) throw new Error('衣服不存在');
-    item.wearCount = (item.wearCount || 0) + 1;
-    await writeMeta(data);
-    return item.wearCount;
   }
 
   // ── 搭配 CRUD ─────────────────────────
@@ -268,8 +256,7 @@ const DB = (() => {
     const outfits = data.outfits || [];
 
     // 最常穿
-    const sorted = [...items].sort((a, b) => (b.wearCount || 0) - (a.wearCount || 0));
-    const mostWorn = sorted.slice(0, 3).filter(i => i.wearCount > 0);
+    const mostWorn = [];
 
     // 最近添加
     const recent = [...items]
@@ -285,7 +272,7 @@ const DB = (() => {
     return {
       totalItems: items.length,
       totalOutfits: outfits.length,
-      totalWears: items.reduce((s, i) => s + (i.wearCount || 0), 0),
+      totalWears: 0,
       mostWorn,
       recentItems: recent,
       categoryCount: catCount
@@ -297,7 +284,7 @@ const DB = (() => {
     // 图片
     saveImage, getImage, deleteImage, blobToThumbnail,
     // 衣服
-    getItems, getItem, addItem, updateItem, deleteItem, incrementWear,
+    getItems, getItem, addItem, updateItem, deleteItem,
     // 搭配
     getOutfits, getOutfit, addOutfit, updateOutfit, deleteOutfit,
     // 设置 & 统计
